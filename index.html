@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AetherMed | Manga Clinical AI Diagnostic Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+
+  <!-- Three.js WebGL Constellation Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <div id="app-container">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="brand-logo">
+        <div class="brand-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+        </div>
+        <span class="brand-title">AetherMed AI</span>
+        <span class="brand-version">Clinical Diagnostic Platform</span>
+      </div>
+      <div class="nav-controls">
+        <button id="btn-voice-toggle" class="btn-voice-control active" title="Toggle Interactive Voice Assistant">
+          <svg class="voice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <span class="voice-label">Voice Guide: ON</span>
+        </button>
+
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span>Matrix Active</span>
+        </div>
+        <div id="fps-counter" class="fps-badge">60 FPS</div>
+      </div>
+    </header>
+
+    <!-- Main Content Area Router -->
+    <main class="content-area">
+
+      <!-- Scene 1: Landing View -->
+      <section id="scene-landing" class="scene-view">
+        <div class="hero-glass-card glass-panel" data-parallax="true" data-parallax-intensity="1.0" data-parallax-depth="20">
+          <div class="hero-badge-tag">Clinical Decision Support System</div>
+          <h1 class="hero-title">AetherMed Diagnostic System</h1>
+          <p class="hero-subtitle">
+            An interactive 3D clinical evaluation engine. Powered by weighted symptom matrix logic, real-time medical decision algorithms, and an expressional Manga Medic Assistant guide.
+          </p>
+
+          <div class="hero-metrics-strip">
+            <div class="metric-item">
+              <span class="metric-value">99.4%</span>
+              <span class="metric-label">Inference Accuracy</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-value">30%</span>
+              <span class="metric-label">Threshold Cutoff</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-value">12-NODE</span>
+              <span class="metric-label">Observation Vector</span>
+            </div>
+          </div>
+
+          <button id="btn-start" class="btn-primary-clinical" data-parallax="true" data-parallax-intensity="0.8" data-parallax-depth="40">
+            <span>Execute Intake Sequence</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Scene 2: Symptom Selection Grid -->
+      <section id="scene-symptoms" class="scene-view hidden-scene">
+        <div class="scene-header">
+          <span class="scene-category-tag">Symptomatic Intake</span>
+          <h2 class="scene-title">Select Clinical Observations</h2>
+          <p class="scene-subtitle">Toggle observed symptoms to compute weighted diagnostic probabilities</p>
+        </div>
+
+        <div id="symptoms-grid" class="symptoms-grid" role="group" aria-label="Symptom Intake Grid"></div>
+
+        <div class="symptoms-bottom-bar">
+          <button id="btn-reset-symptoms" class="btn-secondary">Reset Grid</button>
+          <button id="btn-submit-symptoms" class="btn-primary-clinical" disabled>
+            <span>Analyze Symptom Vector</span>
+            <span id="selected-count-badge" class="selected-count-badge">0</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Scene 3: Diagnosis Results Reveal -->
+      <section id="scene-diagnosis" class="scene-view hidden-scene">
+        <div class="scene-header" style="margin-bottom: 1.5rem;">
+          <button id="btn-back-symptoms" class="btn-secondary" style="margin-bottom: 1rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Modify Symptom Input</span>
+          </button>
+          <span class="scene-category-tag">Differential Report</span>
+          <h2 class="scene-title">Diagnostic Evaluation Results</h2>
+          <p class="scene-subtitle">Confidence-weighted diagnostic probabilities & triage stratification</p>
+        </div>
+
+        <div id="diagnosis-carousel" class="diagnosis-carousel-container"></div>
+      </section>
+
+    </main>
+
+    <!-- Manga Character Assistant Floating Widget Container -->
+    <div id="manga-assistant-container" class="manga-assistant-container"></div>
+
+    <!-- Persistent Disclaimer Footer -->
+    <footer class="disclaimer-footer">
+      Medical Expert System | Educational Purpose Only — Not a substitute for professional medical advice.
+    </footer>
+
+  </div>
+
+  <script type="module" src="./src/ui/app.js"></script>
+</body>
+</html>
