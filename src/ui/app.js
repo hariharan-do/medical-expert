@@ -3,6 +3,7 @@ import { MedicalSceneManager } from '../three/scene.js';
 import { ParallaxController } from './parallax.js';
 import { VoiceAssistant } from './voiceAssistant.js';
 import { MangaCharacter } from './mangaCharacter.js';
+import { consultationDB } from '../db/consultationDB.js';
 import gsap from 'gsap';
 
 export class MedicalExpertApp {
@@ -14,6 +15,7 @@ export class MedicalExpertApp {
     this.voice = null;
     this.character = null;
     this.is2DMode = false;
+    this.cachedDbRecords = [];
 
     this.frameCount = 0;
     this.lastFpsCheckTime = performance.now();
@@ -48,10 +50,8 @@ export class MedicalExpertApp {
       this.parallax = new ParallaxController();
     }
 
-    // Initialize Web Speech Voice Assistant
     this.voice = new VoiceAssistant();
 
-    // Initialize Manga Assistant Character ("Dr. Aira")
     const assistantContainer = document.getElementById('manga-assistant-container');
     if (assistantContainer) {
       this.character = new MangaCharacter(assistantContainer);
@@ -59,12 +59,12 @@ export class MedicalExpertApp {
 
     this.renderSymptomGrid();
     this.bindEvents();
+    this.updateNavbarDbBadge();
 
     if (!this.is2DMode) {
       this.startFpsMonitor();
     }
 
-    // Initial Welcome Speech & Cloud Message
     setTimeout(() => {
       const welcomeText = "Welcome to AetherMed! I am Dr. Aira, your Manga Medic AI guide. Click Execute Intake Sequence to begin.";
       if (this.character) {
@@ -82,6 +82,15 @@ export class MedicalExpertApp {
       return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
     } catch (e) {
       return false;
+    }
+  }
+
+  async updateNavbarDbBadge() {
+    const records = await consultationDB.getAllRecords();
+    this.cachedDbRecords = records;
+    const badge = document.getElementById('nav-db-count-badge');
+    if (badge) {
+      badge.textContent = records.length.toString();
     }
   }
 
@@ -148,12 +157,8 @@ export class MedicalExpertApp {
       gsap.to(cardElement, { scale: 1.0, y: 0, duration: 0.3, ease: 'power2.out' });
       
       const text = `Deselected ${symptom.label}.`;
-      if (this.character) {
-        this.character.speakBubble(text);
-      }
-      if (this.voice) {
-        this.voice.speak(text);
-      }
+      if (this.character) this.character.speakBubble(text);
+      if (this.voice) this.voice.speak(text);
     } else {
       this.selectedSymptoms.add(symptom.id);
       cardElement.classList.add('selected');
@@ -162,20 +167,13 @@ export class MedicalExpertApp {
 
       gsap.to(cardElement, { scale: 1.03, y: -6, duration: 0.3, ease: 'power2.out' });
 
-      // If severe symptom selected (Fever, Vomiting, Stomach Pain), trigger Manga ALERT expression!
       if (['fever', 'vomiting', 'stomach_pain'].includes(symptom.id)) {
-        if (this.character) {
-          this.character.setExpression('ALERT');
-        }
+        if (this.character) this.character.setExpression('ALERT');
       }
 
       const text = `Added ${symptom.label}: ${symptom.description}.`;
-      if (this.character) {
-        this.character.speakBubble(text);
-      }
-      if (this.voice) {
-        this.voice.speak(text);
-      }
+      if (this.character) this.character.speakBubble(text);
+      if (this.voice) this.voice.speak(text);
     }
 
     this.updateSubmitButtonState();
@@ -188,9 +186,7 @@ export class MedicalExpertApp {
     if (!submitBtn) return;
 
     const count = this.selectedSymptoms.size;
-    if (badgeCount) {
-      badgeCount.textContent = count.toString();
-    }
+    if (badgeCount) badgeCount.textContent = count.toString();
 
     if (count > 0) {
       submitBtn.removeAttribute('disabled');
@@ -201,9 +197,7 @@ export class MedicalExpertApp {
 
   bindEvents() {
     const startBtn = document.getElementById('btn-start');
-    if (startBtn) {
-      startBtn.addEventListener('click', () => this.switchState('SYMPTOMS'));
-    }
+    if (startBtn) startBtn.addEventListener('click', () => this.switchState('SYMPTOMS'));
 
     const submitBtn = document.getElementById('btn-submit-symptoms');
     if (submitBtn) {
@@ -215,9 +209,7 @@ export class MedicalExpertApp {
     }
 
     const backBtn = document.getElementById('btn-back-symptoms');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => this.switchState('SYMPTOMS'));
-    }
+    if (backBtn) backBtn.addEventListener('click', () => this.switchState('SYMPTOMS'));
 
     const resetBtn = document.getElementById('btn-reset-symptoms');
     if (resetBtn) {
@@ -226,31 +218,89 @@ export class MedicalExpertApp {
         this.renderSymptomGrid();
         this.updateSubmitButtonState();
         const text = "Observations reset.";
-        if (this.character) {
-          this.character.speakBubble(text);
-        }
-        if (this.voice) {
-          this.voice.speak(text);
-        }
+        if (this.character) this.character.speakBubble(text);
+        if (this.voice) this.voice.speak(text);
       });
     }
 
-    // Toggle Voice Assistance
+    // Header Voice Toggle
     const voiceBtn = document.getElementById('btn-voice-toggle');
     if (voiceBtn) {
       voiceBtn.addEventListener('click', () => {
         if (this.voice) {
           const enabled = this.voice.toggle();
           const label = voiceBtn.querySelector('.voice-label');
-          if (label) {
-            label.textContent = enabled ? 'Voice Guide: ON' : 'Voice Guide: OFF';
-          }
+          if (label) label.textContent = enabled ? 'Voice Guide: ON' : 'Voice Guide: OFF';
           if (enabled) {
             const text = "Voice assistance enabled.";
             if (this.character) this.character.speakBubble(text);
             this.voice.speak(text);
           }
         }
+      });
+    }
+
+    // Header Observation Logs Button
+    const historyBtn = document.getElementById('btn-view-history');
+    if (historyBtn) {
+      historyBtn.addEventListener('click', () => {
+        this.switchState('HISTORY');
+      });
+    }
+
+    const backFromHistoryBtn = document.getElementById('btn-back-from-history');
+    if (backFromHistoryBtn) {
+      backFromHistoryBtn.addEventListener('click', () => {
+        this.switchState('LANDING');
+      });
+    }
+
+    // Search and Filter Events in History View
+    const searchInput = document.getElementById('db-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => this.renderHistoryRecords());
+    }
+
+    const riskFilter = document.getElementById('db-risk-filter');
+    if (riskFilter) {
+      riskFilter.addEventListener('change', () => this.renderHistoryRecords());
+    }
+
+    // Export DB JSON Button
+    const exportBtn = document.getElementById('btn-export-db');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', async () => {
+        const jsonStr = await consultationDB.exportJSON();
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `aethermed_db_export_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        if (this.character) this.character.speakBubble("Database exported as JSON snapshot.");
+      });
+    }
+
+    // Clear DB Button
+    const clearBtn = document.getElementById('btn-clear-db');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to clear all database observation logs?')) {
+          await consultationDB.clearAll();
+          await this.updateNavbarDbBadge();
+          this.renderHistoryRecords();
+          if (this.character) this.character.speakBubble("Database cleared.");
+        }
+      });
+    }
+
+    // Modal Close Button
+    const closeModalBtn = document.getElementById('btn-close-modal');
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        const modal = document.getElementById('db-inspector-modal');
+        if (modal) modal.classList.add('hidden-scene');
       });
     }
   }
@@ -262,34 +312,45 @@ export class MedicalExpertApp {
     const landingSection = document.getElementById('scene-landing');
     const symptomsSection = document.getElementById('scene-symptoms');
     const diagnosisSection = document.getElementById('scene-diagnosis');
+    const historySection = document.getElementById('scene-history');
 
     if (this.sceneManager) {
-      this.sceneManager.transitionToState(newState);
+      this.sceneManager.transitionToState(newState === 'HISTORY' ? 'SYMPTOMS' : newState);
     }
 
     if (newState === 'LANDING') {
       this.showSection(landingSection);
       this.hideSection(symptomsSection);
       this.hideSection(diagnosisSection);
+      this.hideSection(historySection);
     } else if (newState === 'SYMPTOMS') {
       this.hideSection(landingSection);
       this.showSection(symptomsSection);
       this.hideSection(diagnosisSection);
+      this.hideSection(historySection);
 
       this.renderSymptomGrid();
       this.updateSubmitButtonState();
 
       const text = "Select your observed symptoms from the 3D grid, then click Analyze Symptom Vector.";
-      if (this.character) {
-        this.character.speakBubble(text);
-      }
-      if (this.voice) {
-        this.voice.speak(text);
-      }
+      if (this.character) this.character.speakBubble(text);
+      if (this.voice) this.voice.speak(text);
     } else if (newState === 'DIAGNOSIS') {
       this.hideSection(landingSection);
       this.hideSection(symptomsSection);
       this.showSection(diagnosisSection);
+      this.hideSection(historySection);
+    } else if (newState === 'HISTORY') {
+      this.hideSection(landingSection);
+      this.hideSection(symptomsSection);
+      this.hideSection(diagnosisSection);
+      this.showSection(historySection);
+
+      this.renderHistoryRecords();
+
+      const text = "Viewing Clinical Observation Database logs. Inspect past sessions or export database snapshots.";
+      if (this.character) this.character.speakBubble(text);
+      if (this.voice) this.voice.speak(text);
     }
 
     if (this.parallax) {
@@ -308,9 +369,13 @@ export class MedicalExpertApp {
     el.classList.add('hidden-scene');
   }
 
-  evaluateAndRevealDiagnosis() {
+  async evaluateAndRevealDiagnosis() {
     const symptomArray = Array.from(this.selectedSymptoms);
     const results = evaluateSymptoms(symptomArray, 30);
+
+    // Save session automatically to Persistent Database
+    const savedRecord = await consultationDB.saveRecord(symptomArray, results);
+    await this.updateNavbarDbBadge();
 
     const resultsContainer = document.getElementById('diagnosis-carousel');
     if (!resultsContainer) return;
@@ -324,17 +389,15 @@ export class MedicalExpertApp {
           <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; line-height: 1.6;">
             The selected symptoms did not reach the 30% weighted confidence score threshold for any specific differential condition in the database.
           </p>
-          <span style="font-size: 0.85rem; color: #ffffff;">Consider selecting additional observed symptoms or consulting a medical practitioner.</span>
+          <span style="font-size: 0.85rem; color: #ffffff;">Saved to DB log ${savedRecord.id}.</span>
         </div>
       `;
-      const text = "No conditions exceeded the 30% confidence score threshold.";
+      const text = `Evaluation complete. Session saved to database ${savedRecord.id}. No conditions exceeded 30% match.`;
       if (this.character) {
         this.character.setExpression('THINKING');
         this.character.speakBubble(text);
       }
-      if (this.voice) {
-        this.voice.speak(text);
-      }
+      if (this.voice) this.voice.speak(text);
     } else {
       results.forEach((diag, index) => {
         const card = document.createElement('div');
@@ -391,8 +454,8 @@ export class MedicalExpertApp {
 
           <div class="clinical-disclaimer-callout">
             <div>
-              <strong>Professional Notice:</strong>
-              <p style="color: var(--text-secondary); margin-top: 0.25rem;">This output represents automated decision support logic for educational research. It does not constitute formal medical diagnosis or prescribing authority. Consult a licensed physician for clinical management.</p>
+              <strong>Professional Notice (Auto-Saved to DB: ${savedRecord.id}):</strong>
+              <p style="color: var(--text-secondary); margin-top: 0.25rem;">This session has been saved to your local database. Consult a licensed physician for clinical management.</p>
             </div>
           </div>
         `;
@@ -407,17 +470,111 @@ export class MedicalExpertApp {
       );
 
       const topResult = results[0];
-      const text = `Diagnostic evaluation complete! Primary match: ${topResult.name} with ${topResult.confidenceScore}% confidence.`;
+      const text = `Diagnostic evaluation complete! Saved to database log ${savedRecord.id}. Primary match: ${topResult.name} with ${topResult.confidenceScore}% confidence.`;
       if (this.character) {
         this.character.setExpression('CONFIDENT');
         this.character.speakBubble(text);
       }
-      if (this.voice) {
-        this.voice.speak(text);
-      }
+      if (this.voice) this.voice.speak(text);
     }
 
     this.switchState('DIAGNOSIS');
+  }
+
+  async renderHistoryRecords() {
+    const grid = document.getElementById('db-records-grid');
+    if (!grid) return;
+
+    const records = await consultationDB.getAllRecords();
+    this.cachedDbRecords = records;
+
+    const searchQuery = (document.getElementById('db-search-input')?.value || '').toLowerCase().trim();
+    const riskFilter = document.getElementById('db-risk-filter')?.value || 'ALL';
+
+    const filtered = records.filter(rec => {
+      const matchesSearch = !searchQuery || 
+        rec.id.toLowerCase().includes(searchQuery) ||
+        rec.topDiagnosis.name.toLowerCase().includes(searchQuery) ||
+        rec.symptomsList.some(s => s.toLowerCase().includes(searchQuery));
+
+      const matchesRisk = riskFilter === 'ALL' || rec.topDiagnosis.urgency === riskFilter;
+
+      return matchesSearch && matchesRisk;
+    });
+
+    grid.innerHTML = '';
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="db-empty-state">
+          <h3>No Database Records Found</h3>
+          <p style="margin-top: 0.5rem;">Execute diagnostic intake evaluations to populate your observation database.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(rec => {
+      const card = document.createElement('div');
+      card.className = 'db-record-card glass-panel';
+      card.innerHTML = `
+        <div class="db-rec-header">
+          <span class="db-rec-id">${rec.id}</span>
+          <span class="db-rec-date">${rec.dateFormatted}</span>
+        </div>
+        <h4 class="db-rec-title">${rec.topDiagnosis.name}</h4>
+        <div class="db-rec-meta">
+          <span>Observations: <strong>${rec.symptomCount}</strong></span>
+          <span class="db-rec-score">${rec.topDiagnosis.confidenceScore}% Match</span>
+        </div>
+        <div class="triage-tag" style="align-self: flex-start;">${rec.topDiagnosis.urgency}</div>
+      `;
+
+      card.addEventListener('click', () => this.inspectRecord(rec));
+      grid.appendChild(card);
+    });
+  }
+
+  inspectRecord(record) {
+    const modal = document.getElementById('db-inspector-modal');
+    const modalId = document.getElementById('modal-session-id');
+    const modalBody = document.getElementById('modal-session-body');
+
+    if (!modal || !modalBody) return;
+
+    modalId.textContent = `Record ${record.id} (${record.dateFormatted})`;
+
+    modalBody.innerHTML = `
+      <div style="border-bottom: 1px solid var(--manga-border); padding-bottom: 1rem;">
+        <span class="diag-category-badge">${record.topDiagnosis.category}</span>
+        <h2 style="font-size: 1.5rem; margin: 0.25rem 0;">${record.topDiagnosis.name}</h2>
+        <p style="color: var(--text-secondary);">Match Score: <strong>${record.topDiagnosis.confidenceScore}%</strong> &bull; Triage: <strong>${record.topDiagnosis.urgency}</strong></p>
+      </div>
+
+      <div>
+        <h4 class="diag-section-title">Recorded Symptom Observations (${record.symptomCount})</h4>
+        <div class="matched-chips-container">
+          ${record.symptomsList.map(s => `<span class="symptom-chip"><strong>${s}</strong></span>`).join('')}
+        </div>
+      </div>
+
+      <div>
+        <h4 class="diag-section-title">Differential Diagnostic Results (${record.matchedCount})</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          ${record.fullDiagnosticResults.map((r, i) => `
+            <div style="background: rgba(255,255,255,0.05); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--manga-border);">
+              <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                <span>#${i + 1} ${r.name}</span>
+                <span>${r.confidenceScore}% Score</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.35rem;">${r.treatment}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    modal.classList.remove('hidden-scene');
   }
 
   startFpsMonitor() {
@@ -433,9 +590,7 @@ export class MedicalExpertApp {
         this.frameCount = 0;
         this.lastFpsCheckTime = now;
 
-        if (fpsBadge) {
-          fpsBadge.textContent = `${fps} FPS`;
-        }
+        if (fpsBadge) fpsBadge.textContent = `${fps} FPS`;
 
         if (fps < 30) {
           this.lowFpsDuration += 1.0;

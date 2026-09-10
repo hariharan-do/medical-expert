@@ -188,146 +188,6 @@ html, body {
   color: #000000;
 }
 
-/* Live Speech Toast */
-.voice-caption-toast {
-  position: fixed;
-  bottom: 3.5rem;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: rgba(10, 10, 10, 0.95);
-  border: 1.5px solid #ffffff;
-  color: #ffffff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  max-width: 600px;
-  width: 90%;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 99;
-}
-
-.voice-caption-toast.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ==========================================================================
-   Manga Anime Assistant Character Widget ("Dr. Aira")
-   ========================================================================== */
-.manga-assistant-container {
-  position: fixed;
-  bottom: 4rem;
-  right: 2rem;
-  z-index: 95;
-  pointer-events: auto;
-}
-
-.manga-assistant-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
-}
-
-/* Manga Comic Speech Cloud Bubble */
-.manga-speech-cloud {
-  background: #ffffff;
-  color: #000000;
-  border: 2px solid #000000;
-  border-radius: 16px;
-  padding: 0.9rem 1.25rem;
-  max-width: 280px;
-  position: relative;
-  box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.3);
-  opacity: 0;
-  transform: translateY(10px) scale(0.9);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
-}
-
-.manga-speech-cloud.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.speech-cloud-content {
-  font-size: 0.85rem;
-  font-weight: 700;
-  line-height: 1.45;
-  color: #000000;
-}
-
-.speech-cloud-tail {
-  position: absolute;
-  bottom: -10px;
-  right: 35px;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid #ffffff;
-}
-
-/* Manga Character Avatar Card */
-.manga-avatar-card {
-  padding: 0.85rem 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  border: 2px solid #ffffff;
-  border-radius: 12px;
-  background: rgba(10, 10, 10, 0.95);
-  box-shadow: 6px 6px 0px rgba(255, 255, 255, 0.2);
-  position: relative;
-}
-
-.avatar-badge {
-  position: absolute;
-  top: -10px;
-  left: 12px;
-  background: #ffffff;
-  color: #000000;
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  padding: 0.1rem 0.4rem;
-  border-radius: 2px;
-  letter-spacing: 0.5px;
-}
-
-.character-svg-container {
-  width: 58px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.character-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.character-name {
-  font-size: 1rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-}
-
-.character-title {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
 /* Glassmorphism Graphic Panel Base */
 .glass-panel {
   background: var(--bg-panel);
@@ -817,6 +677,276 @@ main.content-area {
   letter-spacing: 0.5px;
 }
 
+/* ==========================================================================
+   Patient Intake Database Log View & Inspector Modal
+   ========================================================================== */
+.db-controls-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.1rem 1.5rem;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.db-input-search {
+  flex: 1;
+  min-width: 220px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--manga-border);
+  color: #ffffff;
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.db-input-search:focus {
+  border-color: #ffffff;
+}
+
+.db-select-filter {
+  background: #0f0f0f;
+  border: 1.5px solid var(--manga-border);
+  color: #ffffff;
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.db-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.db-record-card {
+  padding: 1.5rem;
+  border: 1.5px solid var(--manga-border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.db-record-card:hover {
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.3);
+}
+
+.db-rec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--manga-border);
+  padding-bottom: 0.5rem;
+}
+
+.db-rec-id {
+  font-size: 0.72rem;
+  font-family: monospace;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+}
+
+.db-rec-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.db-rec-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.db-rec-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.db-rec-score {
+  font-family: monospace;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.db-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+
+/* Detail Inspector Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modal-card {
+  max-width: 680px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 2px solid #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  background: #0f0f0f;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid var(--manga-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Manga Assistant Container */
+.manga-assistant-container {
+  position: fixed;
+  bottom: 4rem;
+  right: 2rem;
+  z-index: 95;
+  pointer-events: auto;
+}
+
+.manga-assistant-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.manga-speech-cloud {
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 16px;
+  padding: 0.9rem 1.25rem;
+  max-width: 280px;
+  position: relative;
+  box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.manga-speech-cloud.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.speech-cloud-content {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #000000;
+}
+
+.speech-cloud-tail {
+  position: absolute;
+  bottom: -10px;
+  right: 35px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #ffffff;
+}
+
+.manga-avatar-card {
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  background: rgba(10, 10, 10, 0.95);
+  box-shadow: 6px 6px 0px rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.avatar-badge {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+.character-svg-container {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.character-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.character-name {
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.character-title {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
 .disclaimer-footer {
   position: fixed;
   bottom: 0;
@@ -859,4 +989,5 @@ body.mode-2d .glass-panel {
   .top-navbar { padding: 0.85rem 1.15rem; }
   .hero-glass-card { padding: 1.75rem 1.25rem; }
   .manga-assistant-container { right: 1rem; bottom: 3.5rem; }
+  .db-controls-bar { flex-direction: column; }
 }

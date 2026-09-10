@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AetherMed | Manga Clinical AI Diagnostic Engine</title>
+  <title>AetherMed | Clinical AI Diagnostic Engine & Database</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -25,10 +25,20 @@
           </svg>
         </div>
         <span class="brand-title">AetherMed AI</span>
-        <span class="brand-version">Clinical Diagnostic Platform</span>
+        <span class="brand-version">Clinical Platform</span>
       </div>
       <div class="nav-controls">
-        <button id="btn-voice-toggle" class="btn-voice-control active" title="Toggle Interactive Voice Assistant">
+        <button id="btn-view-history" class="btn-secondary" title="View Patient Intake Database Logs">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Observation Logs</span>
+          <span id="nav-db-count-badge" class="selected-count-badge">0</span>
+        </button>
+
+        <button id="btn-voice-toggle" class="btn-voice-control active" title="Toggle Voice Assistant">
           <svg class="voice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -38,7 +48,7 @@
 
         <div class="system-status">
           <span class="status-dot"></span>
-          <span>Matrix Active</span>
+          <span>Database Ready</span>
         </div>
         <div id="fps-counter" class="fps-badge">60 FPS</div>
       </div>
@@ -50,10 +60,10 @@
       <!-- Scene 1: Landing View -->
       <section id="scene-landing" class="scene-view">
         <div class="hero-glass-card glass-panel" data-parallax="true" data-parallax-intensity="1.0" data-parallax-depth="20">
-          <div class="hero-badge-tag">Clinical Decision Support System</div>
+          <div class="hero-badge-tag">Clinical Decision Support & Database</div>
           <h1 class="hero-title">AetherMed Diagnostic System</h1>
           <p class="hero-subtitle">
-            An interactive 3D clinical evaluation engine. Powered by weighted symptom matrix logic, real-time medical decision algorithms, and an expressional Manga Medic Assistant guide.
+            An interactive 3D clinical evaluation engine. Powered by weighted symptom matrix logic, real-time medical decision algorithms, persistent patient observation logging, and an expressional Manga Assistant.
           </p>
 
           <div class="hero-metrics-strip">
@@ -62,8 +72,8 @@
               <span class="metric-label">Inference Accuracy</span>
             </div>
             <div class="metric-item">
-              <span class="metric-value">30%</span>
-              <span class="metric-label">Threshold Cutoff</span>
+              <span class="metric-value">IndexedDB</span>
+              <span class="metric-label">Persistent Storage</span>
             </div>
             <div class="metric-item">
               <span class="metric-value">12-NODE</span>
@@ -94,7 +104,7 @@
         <div class="symptoms-bottom-bar">
           <button id="btn-reset-symptoms" class="btn-secondary">Reset Grid</button>
           <button id="btn-submit-symptoms" class="btn-primary-clinical" disabled>
-            <span>Analyze Symptom Vector</span>
+            <span>Analyze & Save Session</span>
             <span id="selected-count-badge" class="selected-count-badge">0</span>
           </button>
         </div>
@@ -112,13 +122,57 @@
           </button>
           <span class="scene-category-tag">Differential Report</span>
           <h2 class="scene-title">Diagnostic Evaluation Results</h2>
-          <p class="scene-subtitle">Confidence-weighted diagnostic probabilities & triage stratification</p>
+          <p class="scene-subtitle">Confidence-weighted diagnostic probabilities & triage stratification (Auto-Saved to DB)</p>
         </div>
 
         <div id="diagnosis-carousel" class="diagnosis-carousel-container"></div>
       </section>
 
+      <!-- Scene 4: Database Patient Intake History Log Viewer -->
+      <section id="scene-history" class="scene-view hidden-scene">
+        <div class="scene-header" style="margin-bottom: 1.5rem;">
+          <button id="btn-back-from-history" class="btn-secondary" style="margin-bottom: 1rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back to Main Menu</span>
+          </button>
+          <span class="scene-category-tag">Database Inspection</span>
+          <h2 class="scene-title">Clinical Observation Database Logs</h2>
+          <p class="scene-subtitle">Historical patient intake records and saved diagnostic sessions</p>
+        </div>
+
+        <!-- Database Filter Controls -->
+        <div class="db-controls-bar glass-panel">
+          <input type="text" id="db-search-input" class="db-input-search" placeholder="Search logs by symptom or condition name..." />
+          <select id="db-risk-filter" class="db-select-filter">
+            <option value="ALL">All Triage Levels</option>
+            <option value="ROUTINE_OBSERVATION">Routine Observation</option>
+            <option value="OUTPATIENT_EVALUATION">Outpatient Evaluation</option>
+            <option value="PRIORITY_MEDICAL_CONSULTATION">Priority Consultation</option>
+            <option value="EMERGENCY_TRIAGE_ADVISORY">Emergency Triage</option>
+          </select>
+          <button id="btn-export-db" class="btn-secondary">Export JSON</button>
+          <button id="btn-clear-db" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">Clear All</button>
+        </div>
+
+        <!-- Records Grid/Table Container -->
+        <div id="db-records-grid" class="db-records-grid"></div>
+      </section>
+
     </main>
+
+    <!-- Session Detail Inspector Modal Overlay -->
+    <div id="db-inspector-modal" class="modal-overlay hidden-scene">
+      <div class="modal-card glass-panel">
+        <div class="modal-header">
+          <h3 id="modal-session-id" class="modal-title">Session Record</h3>
+          <button id="btn-close-modal" class="btn-secondary">Close &times;</button>
+        </div>
+        <div id="modal-session-body" class="modal-body"></div>
+      </div>
+    </div>
 
     <!-- Manga Character Assistant Floating Widget Container -->
     <div id="manga-assistant-container" class="manga-assistant-container"></div>
